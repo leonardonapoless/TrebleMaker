@@ -1,4 +1,5 @@
 # TrebleMaker
+<img width="1470" height="923" alt="CleanShot 2025-12-04 at 17 15 57@2x" src="https://github.com/user-attachments/assets/8f5c6668-dd40-43cf-b795-ff26b2887991" />
 
 **A simple high-shelf filter plugin built with JUCE.**
 
