@@ -1,0 +1,36 @@
+# JUCE
+Builds/
+JuceLibraryCode/
+*.jucer.user
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.xcodeproj/
+*.xcworkspace/
+*.sln
+*.suo
+*.opensdf
+*.sdf
+*.vcxproj.user
+
+# CMake
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Backup files
+*.bak
+*.swp
+*~
