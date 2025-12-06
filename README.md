@@ -1,7 +1,11 @@
 # TrebleMaker
-| TrebleMaker | Intro |
-| --- | --- |
-| <img width="604" height="574" alt="treblemaker_demo" src="https://github.com/user-attachments/assets/d0ef0784-902c-4e1e-920c-149becf8fff4" /> | **A simple high-shelf filter plugin built with JUCE.** This is my first real dive into the world of audio plugin development. It's a simple highshelf filter, but honestly, the DSP wasn't the main goal here. I built this to force myself to learn C++, JUCE, and how to get hardware-accelerated graphics working in an audio plugin. It's definitely a work in progress (and the code probably shows it!), but I'm proud of what I've figured out so far. |
+<img width="604" height="574" alt="treblemaker_demo" src="https://github.com/user-attachments/assets/d0ef0784-902c-4e1e-920c-149becf8fff4" /> 
+
+**A simple high-shelf filter plugin built with JUCE.** 
+
+This is my first real dive into the world of audio plugin development. It's a simple highshelf filter, but honestly, the DSP wasn't the main goal here. I built this to force myself to learn C++, JUCE, and how to get hardware-accelerated graphics working in an audio plugin. 
+
+It's definitely a work in progress (and the code probably shows it!), but I'm proud of what I've figured out so far.
 
 ## The Journey & What I've Learned
 
