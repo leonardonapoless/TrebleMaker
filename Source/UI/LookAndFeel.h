@@ -2,7 +2,6 @@
 
 #include <JuceHeader.h>
 
-// Industrial palette
 namespace theme_colors
 {
     const auto background    = juce::Colour::fromString("FFF2F2F2"); // off-white

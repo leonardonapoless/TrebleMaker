@@ -18,24 +18,6 @@
         <FILE id="look_and_feel" name="LookAndFeel.h" compile="0" resource="0"
               file="Source/UI/LookAndFeel.h"/>
       </GROUP>
-      <GROUP id="{VISUALIZER_GROUP_ID}" name="Visualizer">
-        <FILE id="eq_renderer_h" name="EQRenderer.h" compile="0" resource="0"
-              file="Source/Visualizer/EQRenderer.h"/>
-        <FILE id="eq_renderer_factory_h" name="EQRendererFactory.h" compile="0"
-              resource="0" file="Source/Visualizer/EQRendererFactory.h"/>
-        <FILE id="eq_renderer_factory_mm" name="EQRendererFactory.mm" compile="1"
-              resource="0" file="Source/Visualizer/EQRendererFactory.mm"/>
-        <FILE id="metal_renderer_h" name="MetalEQRenderer.h" compile="0" resource="0"
-              file="Source/Visualizer/MetalEQRenderer.h"/>
-        <FILE id="metal_renderer_mm" name="MetalEQRenderer.mm" compile="1"
-              resource="0" file="Source/Visualizer/MetalEQRenderer.mm"/>
-        <FILE id="opengl_renderer_h" name="OpenGLEQRenderer.h" compile="0"
-              resource="0" file="Source/Visualizer/OpenGLEQRenderer.h"/>
-        <FILE id="opengl_renderer_cpp" name="OpenGLEQRenderer.cpp" compile="1"
-              resource="0" file="Source/Visualizer/OpenGLEQRenderer.cpp"/>
-        <FILE id="shaders_metal" name="Shaders.metal" compile="0" resource="1"
-              file="Source/Visualizer/Shaders.metal"/>
-      </GROUP>
     </GROUP>
   </MAINGROUP>
   <MODULES>
@@ -46,6 +28,8 @@
     <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0"
             useGlobalPath="1"/>
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors_headless" showAllCode="1" useLocalCopy="0"
+            useGlobalPath="1"/>
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -54,11 +38,10 @@
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_opengl" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraFrameworks="Metal">
+    <XCODE_MAC targetFolder="Builds/MacOSX">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" targetName="TrebleMaker"/>
         <CONFIGURATION isDebug="0" name="Release" targetName="TrebleMaker"/>
@@ -78,7 +61,7 @@
         <MODULEPATH id="juce_graphics" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_basics" path="../../../../JUCE/modules"/>
         <MODULEPATH id="juce_gui_extra" path="../../../../JUCE/modules"/>
-        <MODULEPATH id="juce_opengl" path="../../../../JUCE/modules"/>
+        <MODULEPATH id="juce_audio_processors_headless" path="../../../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
