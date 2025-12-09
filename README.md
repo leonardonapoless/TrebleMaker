@@ -2,7 +2,7 @@
   <h1>TrebleMaker</h1>
 
   <p style="font-style: italic; color: #666; font-size: 1.1em;">
-    Here’s to the crazy ones. The misfits. The rebels. The <strong>TREBLEMAKERS</strong>.
+    Here’s to the crazy ones. The misfits. The rebels. The <strong><i>TREBLEMAKERS</i></strong>.
   </p>
 
   <br />
