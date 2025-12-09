@@ -10,7 +10,7 @@
 
   <br />
 
-  <img width="600" alt="treblemaker_demo copy" src="https://github.com/user-attachments/assets/c6c865a3-a629-40bc-ade2-3ac4417260b7" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+  <img width="600" alt="treblemaker_demo" src="https://github.com/user-attachments/assets/b6c51a06-bc3d-4967-a3bb-a83b19958148" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
 
   <br />
   <br />
