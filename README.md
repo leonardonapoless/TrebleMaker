@@ -2,7 +2,6 @@
 
 <img width="604" height="574" alt="treblemaker_demo" src="https://github.com/user-attachments/assets/d0ef0784-902c-4e1e-920c-149becf8fff4" /> 
 
-
 Here’s to the crazy ones. The misfits. The rebels. The ***TREBLEMAKERS***.
 
 ### **A simple high-shelf filter plugin built with JUCE.** 
@@ -23,3 +22,34 @@ It's a work in progress, but it's functional and I learned a ton building it.
 *   [ ] Real-time FFT frequency analyzer
 *   [ ] Optimize drawing performance (caching complex paths)
 *   [ ] General code cleanup and refactoring
+
+## How to Build
+
+**Prerequisites:**
+- [CMake](https://cmake.org/download/) (3.22 or higher)
+  ```bash
+  brew install cmake
+  ```
+- C++ Compiler (Xcode on macOS, Visual Studio on Windows)
+
+**Build:**
+
+```bash
+# 1. Configure
+cmake -B Builds/CMake -S .
+
+# 2. Build (Debug)
+cmake --build Builds/CMake --config Debug
+
+# Or
+
+# 2. Build (Release)
+cmake --build Builds/CMake --config Release
+```
+
+**Artifacts:**
+After building, finding the plugins in `Builds/CMake/TrebleMaker_artefacts/`:
+- **VST3**: `VST3/TrebleMaker.vst3`
+- **CLAP**: `CLAP/TrebleMaker.clap`
+- **AU**: `AU/TrebleMaker.component`
+- **Standalone**: `Standalone/TrebleMaker.app`
