@@ -7,9 +7,9 @@ TrebleMakerEditor::TrebleMakerEditor (TrebleMakerAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
       vBlankAttachment(this, [this] { updateCurve(); })
 {
-    setLookAndFeel(&industrialLookAndFeel);
+    setLookAndFeel(&lookAndFeel);
 
-    auto setupSlider = [this](juce::Slider& s, const juce::String& id, juce::Label& l, const juce::String& text)
+    auto setupSlider = [this](juce::Slider& s, const juce::String&, juce::Label& l, const juce::String& text)
     {
         s.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
         s.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -208,9 +208,9 @@ void TrebleMakerEditor::updateCurve()
     static float smoothBoost = 0.0f;
     static float smoothFocus = 0.5f; // Q
     
-    float targetFreq = freqSlider.getValue();
-    float targetBoost = boostSlider.getValue();
-    float targetFocus = focusSlider.getValue();
+    float targetFreq = (float) freqSlider.getValue();
+    float targetBoost = (float) boostSlider.getValue();
+    float targetFocus = (float) focusSlider.getValue();
     bool isReduce = reduceButton.getToggleState();
     
     // simple smoothing coefficient
