@@ -17,21 +17,18 @@ public:
 private:
     TrebleMakerAudioProcessor& audioProcessor;
     
-    IndustrialLookAndFeel industrialLookAndFeel;
+    LookAndFeel lookAndFeel;
 
-    // controls
     juce::Slider freqSlider;
     juce::Slider boostSlider;
     juce::Slider focusSlider;
     juce::TextButton reduceButton;
     
-    // labels
     juce::Label freqLabel;
     juce::Label boostLabel;
     juce::Label focusLabel;
     juce::Label titleLabel;
 
-    // attachments
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
     std::unique_ptr<SliderAttachment> freqAttachment;
     std::unique_ptr<SliderAttachment> boostAttachment;

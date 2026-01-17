@@ -20,20 +20,19 @@ namespace theme_colors
     const auto buttonBlue       = juce::Colour::fromString("FF101010"); // black
 }
 
-class IndustrialLookAndFeel : public juce::LookAndFeel_V4
+class LookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-    IndustrialLookAndFeel()
+    LookAndFeel()
     {
         setColour(juce::Label::textColourId, theme_colors::textDark);
         setColour(juce::TextButton::textColourOffId, juce::Colours::white);
         setColour(juce::TextButton::textColourOnId, juce::Colours::white);
     }
 
-    // "aluminum" knob
     void drawRotarySlider(juce::Graphics& g, int x, int y, int width, int height,
                           float sliderPos, const float rotaryStartAngle,
-                          const float rotaryEndAngle, juce::Slider& slider) override
+                          const float rotaryEndAngle, juce::Slider&) override
     {
         auto bounds = juce::Rectangle<int>(x, y, width, height).toFloat();
         auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) / 2.0f - 4.0f;
@@ -98,8 +97,8 @@ public:
     
     // button
     void drawButtonBackground(juce::Graphics& g, juce::Button& button, 
-                              const juce::Colour& backgroundColour,
-                              bool shouldDrawButtonAsHighlighted, 
+                              const juce::Colour&,
+                              bool shouldDrawButtonAsHighlighted,  
                               bool shouldDrawButtonAsDown) override
     {
         auto bounds = button.getLocalBounds().toFloat().reduced(4.0f);
@@ -187,7 +186,7 @@ public:
     
     // override text button to use the custom background
     // override font for text buttons
-    juce::Font getTextButtonFont(juce::TextButton&, int buttonHeight) override
+    juce::Font getTextButtonFont(juce::TextButton&, int) override
     {
         return juce::Font(juce::FontOptions("Helvetica", 13.0f, juce::Font::bold));
     }

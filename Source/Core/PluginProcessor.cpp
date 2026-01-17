@@ -16,22 +16,22 @@ juce::AudioProcessorValueTreeState::ParameterLayout TrebleMakerAudioProcessor::c
 
     // freq 2k-20k
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "freq", "Frequency", 
+        juce::ParameterID("freq", 1), "Frequency", 
         juce::NormalisableRange<float>(2000.0f, 20000.0f, 1.0f, 0.4f), 8000.0f));
 
     // gain 0-8db
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "gain", "Gain", 
+        juce::ParameterID("gain", 1), "Gain", 
         juce::NormalisableRange<float>(0.0f, 8.0f, 0.1f, 1.0f), 2.0f));
 
     // q 0.1-1.5
     params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        "q", "Width (Q)", 
+        juce::ParameterID("q", 1), "Width (Q)", 
         juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), 0.7f));
 
     // boost/cut mode
     params.push_back(std::make_unique<juce::AudioParameterBool>(
-        "mode", "Reduce Mode", false));
+        juce::ParameterID("mode", 1), "Reduce Mode", false));
 
     return { params.begin(), params.end() };
 }
@@ -40,8 +40,8 @@ void TrebleMakerAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
 {
     juce::dsp::ProcessSpec spec;
     spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = samplesPerBlock;
-    spec.numChannels = getTotalNumOutputChannels();
+    spec.maximumBlockSize = (uint32_t) samplesPerBlock;
+    spec.numChannels = (uint32_t) getTotalNumOutputChannels();
 
     filters.clear();
     for (int i = 0; i < getTotalNumOutputChannels(); ++i)
@@ -54,7 +54,7 @@ void TrebleMakerAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
         filters.push_back(std::move(filter));
     }
     
-    dryBuffer.setSize(getTotalNumInputChannels(), samplesPerBlock);
+    dryBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
     
     driftPhase = 0.0;
 }
@@ -101,15 +101,18 @@ void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     }
 
     // copy dry
-    for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+    int channelsToCopy = juce::jmin(buffer.getNumChannels(), dryBuffer.getNumChannels());
+    int samplesToCopy = juce::jmin(buffer.getNumSamples(), dryBuffer.getNumSamples());
+    
+    for (int ch = 0; ch < channelsToCopy; ++ch)
     {
-        dryBuffer.copyFrom(ch, 0, buffer, ch, 0, buffer.getNumSamples());
+        dryBuffer.copyFrom(ch, 0, buffer, ch, 0, samplesToCopy);
     }
 
     // process filters
     juce::dsp::AudioBlock<float> block(buffer);
     
-    for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+    for (size_t ch = 0; ch < (size_t) buffer.getNumChannels(); ++ch)
     {
         if (ch < filters.size())
         {
@@ -119,13 +122,16 @@ void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         }
     }
     
+    // input (dry) channels might be fewer than output channels (mono in -> stereo out)
+    const int numChannelsToProcess = juce::jmin(buffer.getNumChannels(), dryBuffer.getNumChannels());
+
     // mix
     if (!isReduceMode)
     {
         // boost
         float boostAmount = juce::Decibels::decibelsToGain(driveAmount) - 1.0f;
         
-        for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+        for (int ch = 0; ch < numChannelsToProcess; ++ch)
         {
             buffer.applyGain(ch, 0, buffer.getNumSamples(), boostAmount);
             buffer.addFrom(ch, 0, dryBuffer, ch, 0, buffer.getNumSamples());
@@ -136,7 +142,7 @@ void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         // cut
         float cutAmount = juce::Decibels::decibelsToGain(driveAmount); 
         
-        for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+        for (int ch = 0; ch < numChannelsToProcess; ++ch)
         {
             buffer.applyGain(ch, 0, buffer.getNumSamples(), cutAmount);
             
@@ -225,6 +231,6 @@ double TrebleMakerAudioProcessor::getTailLengthSeconds() const { return 0.0; }
 
 int TrebleMakerAudioProcessor::getNumPrograms() { return 1; }
 int TrebleMakerAudioProcessor::getCurrentProgram() { return 0; }
-void TrebleMakerAudioProcessor::setCurrentProgram (int index) {}
-const juce::String TrebleMakerAudioProcessor::getProgramName (int index) { return "Default"; }
-void TrebleMakerAudioProcessor::changeProgramName (int index, const juce::String& newName) {}
+void TrebleMakerAudioProcessor::setCurrentProgram (int) {}
+const juce::String TrebleMakerAudioProcessor::getProgramName (int) { return "Default"; }
+void TrebleMakerAudioProcessor::changeProgramName (int, const juce::String&) {}
