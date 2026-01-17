@@ -1,36 +1,63 @@
-# JUCE
-Builds/
-JuceLibraryCode/
-*.jucer.user
-
-# macOS
+# MacOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-
-# IDEs
-.vscode/
-.idea/
-*.xcodeproj/
-*.xcworkspace/
-*.sln
-*.suo
-*.opensdf
-*.sdf
-*.vcxproj.user
+# Xcode
+build/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.usercontent
+*.xccheckout
+*.moved-aside
+DerivedData/
+*.hmap
+*.ipa
+*.xcuserstate
 
 # CMake
 cmake-build-*/
 CMakeCache.txt
 CMakeFiles/
+cmake_install.cmake
 Makefile
-*.cmake
-!CMakeLists.txt
+CTestTestfile.cmake
+*.cbp
+compile_commands.json
 
-# Backup files
-*.bak
-*.swp
-*~
+# Visual Studio Code
+.vscode/
+
+# JUCE
+JuceLibraryCode/
+*.jucer.user
+Builds/
+
+# Audio Plugins
+*.vst3
+*.clap
+*.component
+*.app
+*.vst
+*.n-track
+*.lv2
+
+# C++
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
+*.class
+*.exe
+*.out

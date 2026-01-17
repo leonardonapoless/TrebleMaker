@@ -1,6 +1,7 @@
 #pragma once
 
-#include <JuceHeader.h>
+#include <juce_gui_extra/juce_gui_extra.h>
+#include <juce_graphics/juce_graphics.h>
 #include "../Core/PluginProcessor.h"
 #include "LookAndFeel.h"
 
