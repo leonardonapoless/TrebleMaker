@@ -42,6 +42,11 @@ private:
     std::vector<float> eqCurve;
     float phase = 0.0f;
     
+    // smoothing state
+    float smoothFreq = 1000.0f;
+    float smoothBoost = 0.0f;
+    float smoothFocus = 0.5f;
+    
     void updateCurve();
     void drawScreen(juce::Graphics& g, juce::Rectangle<float> bounds);
     void drawGrid(juce::Graphics& g, juce::Rectangle<float> bounds);

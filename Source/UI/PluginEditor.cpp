@@ -71,10 +71,9 @@ void TrebleMakerEditor::drawGrid(juce::Graphics& g, juce::Rectangle<float> bound
     g.setColour(theme_colors::gridLines);
     float gridSize = 40.0f;
     
-    // draw grid
     for (float x = 0; x < bounds.getWidth(); x += gridSize)
         g.drawVerticalLine((int)x, 0.0f, bounds.getHeight());
-        
+    
     for (float y = 0; y < bounds.getHeight(); y += gridSize)
         g.drawHorizontalLine((int)y, 0.0f, bounds.getWidth());
 }
@@ -203,11 +202,6 @@ void TrebleMakerEditor::resized()
 
 void TrebleMakerEditor::updateCurve()
 {
-    // smooth parameters for elastic animation
-    static float smoothFreq = 1000.0f;
-    static float smoothBoost = 0.0f;
-    static float smoothFocus = 0.5f; // Q
-    
     float targetFreq = (float) freqSlider.getValue();
     float targetBoost = (float) boostSlider.getValue();
     float targetFocus = (float) focusSlider.getValue();
