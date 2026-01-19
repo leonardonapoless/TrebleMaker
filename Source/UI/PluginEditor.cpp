@@ -173,31 +173,30 @@ void TrebleMakerEditor::drawScreen(juce::Graphics& g, juce::Rectangle<float> bou
 
 void TrebleMakerEditor::resized()
 {
-    auto bounds = getLocalBounds();
+    auto area = getLocalBounds();
     
-    titleLabel.setBounds(25, 15, 200, 30);
+    titleLabel.setBounds(area.removeFromTop(45).reduced(25, 5));
+
+    area.removeFromBottom(50);
+    auto bottomArea = area.removeFromBottom(150).reduced(10);
+    auto buttonArea = bottomArea.removeFromRight(140).reduced(10, 30);
     
-    // knobs area
-    auto bottomArea = bounds.removeFromBottom(150);
+    reduceButton.setBounds(buttonArea);
+
+    const int knobWidth = bottomArea.getWidth() / 3;
     
-    int knobSize = 90;
-    int gap = 30;
-    int startX = 50;
-    int y = bottomArea.getY() + 10;
-    
-    auto setKnob = [&](juce::Slider& s, juce::Label& l, int index)
+    freqSlider.setBounds(bottomArea.removeFromLeft(knobWidth).reduced(10));
+    boostSlider.setBounds(bottomArea.removeFromLeft(knobWidth).reduced(10));
+    focusSlider.setBounds(bottomArea.removeFromLeft(knobWidth).reduced(10));
+
+    auto positionLabel = [&](juce::Slider& s, juce::Label& l)
     {
-        s.setBounds(startX + index * (knobSize + gap), y, knobSize, knobSize);
-        l.setBounds(s.getX(), s.getBottom() + 5, knobSize, 20);
+        l.setBounds(s.getX(), s.getBottom() + 5, s.getWidth(), 20);
     };
-    
-    setKnob(freqSlider, freqLabel, 0);
-    setKnob(boostSlider, boostLabel, 1);
-    setKnob(focusSlider, focusLabel, 2);
-    
-    // button
-    // to the right of the knobs
-    reduceButton.setBounds(startX + 3 * (knobSize + gap) + 20, y + 25, 120, 40);
+
+    positionLabel(freqSlider, freqLabel);
+    positionLabel(boostSlider, boostLabel);
+    positionLabel(focusSlider, focusLabel);
 }
 
 void TrebleMakerEditor::updateCurve()
@@ -269,13 +268,11 @@ void TrebleMakerEditor::updateCurve()
         eqCurve[i] += wave;
     }
     
-    phase += 0.05f; // slower speed
+    phase += 0.05f;
     
-    // Update button text
-    if (reduceButton.getToggleState())
-        reduceButton.setButtonText("BOOST");
-    else
-        reduceButton.setButtonText("REDUCE");
+    const auto text = reduceButton.getToggleState() ? "BOOST" : "REDUCE";
+    if (reduceButton.getButtonText() != text)
+        reduceButton.setButtonText(text);
     
     // repaint only the screen area to save CPU
     repaint();

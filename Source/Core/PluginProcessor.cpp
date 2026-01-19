@@ -74,24 +74,28 @@ void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
+    const double sampleRate = getSampleRate();
+    if (sampleRate <= 0.0)
+        return;
+
     float currentCutoff = *apvts.getRawParameterValue("freq");
     float driveAmount   = *apvts.getRawParameterValue("gain");
     float currentQ      = *apvts.getRawParameterValue("q");
     
     bool isReduceMode = *apvts.getRawParameterValue("mode") > 0.5f;
 
-    // analog drift
-    double driftAmount = std::sin(driftPhase) * 0.005;
+    const double driftInc = (sampleRate > 0.0) ? (2.0 * juce::MathConstants<double>::pi * 0.2) / sampleRate : 0.0;
     
-    // lfo increment
-    driftPhase += (2.0 * juce::MathConstants<double>::pi * 0.2) / getSampleRate() * buffer.getNumSamples();
+    driftPhase += driftInc * buffer.getNumSamples();
     
     if (driftPhase > juce::MathConstants<double>::twoPi) 
         driftPhase -= juce::MathConstants<double>::twoPi;
+
+    float driftAmount = (float)std::sin(driftPhase) * 0.005f;
+    float analogFreq = currentCutoff * (1.0f + driftAmount);
     
-    float analogFreq = currentCutoff * (1.0f + (float)driftAmount);
+    analogFreq = juce::jlimit(20.0f, (float)(sampleRate * 0.49), analogFreq);
     
-    // link q to gain
     float analogQ = currentQ + (driveAmount * 0.02f); 
 
     for (auto& filter : filters)
@@ -156,35 +160,33 @@ void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, 
         }
     }
 
-    // saturation
     if (!isReduceMode && driveAmount > 0.1f)
     {
-        float targetDrive = 1.0f + (driveAmount * 0.08f); 
-        smoothDrive = smoothDrive * 0.95f + targetDrive * 0.05f;
+        const float targetDrive = 1.0f + (driveAmount * 0.08f);
+        const float dcBias = 0.15f;
+        const float invScale = 1.0f / (std::tanh(targetDrive + dcBias) - std::tanh(dcBias));
+        const float blend = juce::jmin(driveAmount / 12.0f, 1.0f);
 
-        const float dcBias = 0.15f; 
+        const float startDrive = smoothDrive;
 
         for (int channel = 0; channel < totalNumInputChannels; ++channel)
         {
             auto* channelData = buffer.getWritePointer(channel);
+            float currentDrive = startDrive;
             
             for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
             {
+                currentDrive += (targetDrive - currentDrive) * 0.001f;
+
                 float in = channelData[sample];
-
-                float x = in * smoothDrive;
-                x += dcBias;
-
-                // soft clip tanh
-                float saturated = std::tanh(x);
-                float out = saturated - std::tanh(dcBias);
+                float x = in * currentDrive + dcBias;
+                float out = (std::tanh(x) - std::tanh(dcBias)) * invScale;
                 
-                out /= (std::tanh(smoothDrive + dcBias) - std::tanh(dcBias));
-
-                float blend = juce::jmin(driveAmount / 12.0f, 1.0f);
-                
-                channelData[sample] = (out * blend) + (in * (1.0f - blend));
+                channelData[sample] = out * blend + in * (1.0f - blend);
             }
+            
+            if (channel == totalNumInputChannels - 1)
+                smoothDrive = currentDrive;
         }
     }
 }
