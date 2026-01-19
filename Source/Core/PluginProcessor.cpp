@@ -10,6 +10,19 @@ TrebleMakerAudioProcessor::TrebleMakerAudioProcessor()
 {
 }
 
+const juce::String TrebleMakerAudioProcessor::getName() const { return "TrebleMaker"; }
+
+bool TrebleMakerAudioProcessor::acceptsMidi() const { return false; }
+bool TrebleMakerAudioProcessor::producesMidi() const { return false; }
+bool TrebleMakerAudioProcessor::isMidiEffect() const { return false; }
+double TrebleMakerAudioProcessor::getTailLengthSeconds() const { return 0.0; }
+
+int TrebleMakerAudioProcessor::getNumPrograms() { return 1; }
+int TrebleMakerAudioProcessor::getCurrentProgram() { return 0; }
+void TrebleMakerAudioProcessor::setCurrentProgram (int) {}
+const juce::String TrebleMakerAudioProcessor::getProgramName (int) { return "Default"; }
+void TrebleMakerAudioProcessor::changeProgramName (int, const juce::String&) {}
+
 juce::AudioProcessorValueTreeState::ParameterLayout TrebleMakerAudioProcessor::createParameterLayout()
 {
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
@@ -224,15 +237,4 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
     return new TrebleMakerAudioProcessor();
 }
 
-const juce::String TrebleMakerAudioProcessor::getName() const { return "TrebleMaker"; }
 
-bool TrebleMakerAudioProcessor::acceptsMidi() const { return false; }
-bool TrebleMakerAudioProcessor::producesMidi() const { return false; }
-bool TrebleMakerAudioProcessor::isMidiEffect() const { return false; }
-double TrebleMakerAudioProcessor::getTailLengthSeconds() const { return 0.0; }
-
-int TrebleMakerAudioProcessor::getNumPrograms() { return 1; }
-int TrebleMakerAudioProcessor::getCurrentProgram() { return 0; }
-void TrebleMakerAudioProcessor::setCurrentProgram (int) {}
-const juce::String TrebleMakerAudioProcessor::getProgramName (int) { return "Default"; }
-void TrebleMakerAudioProcessor::changeProgramName (int, const juce::String&) {}
