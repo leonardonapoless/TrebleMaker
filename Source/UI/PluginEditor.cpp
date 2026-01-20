@@ -15,11 +15,17 @@ TrebleMakerEditor::TrebleMakerEditor (TrebleMakerAudioProcessor& p)
     reduceButton.setButtonText("REDUCE");
     reduceButton.setClickingTogglesState(true);
     addAndMakeVisible(reduceButton);
+    
+    bypassButton.setButtonText("bypass");
+    bypassButton.setComponentID(PID::bypass);
+    bypassButton.setClickingTogglesState(true);
+    addAndMakeVisible(bypassButton);
 
     freqAttachment   = std::make_unique<SliderAttachment>(audioProcessor.apvts, PID::freq,  freqSlider);
     boostAttachment  = std::make_unique<SliderAttachment>(audioProcessor.apvts, PID::gain, boostSlider);
     focusAttachment  = std::make_unique<SliderAttachment>(audioProcessor.apvts, PID::q,    focusSlider);
     reduceAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, PID::mode, reduceButton);
+    bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, PID::bypass, bypassButton);
     
     titleLabel.setText("TrebleMaker", juce::dontSendNotification);
     titleLabel.setFont(juce::Font(juce::FontOptions("Helvetica", 18.0f, juce::Font::bold)));
@@ -82,7 +88,7 @@ void TrebleMakerEditor::drawScreen(juce::Graphics& g, juce::Rectangle<float> bou
         g.setColour(theme_colors::screenBackground);
         g.fillAll(); 
         
-        // Faint grid
+        // grid
         g.setColour(juce::Colours::black.withAlpha(0.05f));
         constexpr float cell = 20.0f;
         
@@ -132,11 +138,13 @@ void TrebleMakerEditor::drawResponseCurve(juce::Graphics& g, juce::Rectangle<flo
     fillPath.lineTo(bounds.getX(), bounds.getBottom());
     fillPath.closeSubPath();
     
-    g.setGradientFill(juce::ColourGradient(theme_colors::screenRed.withAlpha(0.5f), 0, bounds.getBottom(),
-                                           theme_colors::screenRed.withAlpha(0.1f), 0, bounds.getY(), false));
+    auto baseColor = bypassButton.getToggleState() ? juce::Colours::grey : theme_colors::screenRed;
+
+    g.setGradientFill(juce::ColourGradient(baseColor.withAlpha(0.5f), 0, bounds.getBottom(),
+                                           baseColor.withAlpha(0.1f), 0, bounds.getY(), false));
     g.fillPath(fillPath);
     
-    g.setColour(theme_colors::screenRed);
+    g.setColour(baseColor);
     g.strokePath(p, juce::PathStrokeType(2.5f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
 }
 
@@ -176,6 +184,10 @@ void TrebleMakerEditor::resized()
     auto bottomArea = area.removeFromBottom(150).reduced(LayoutConstants::defaultPadding);
     auto buttonArea = bottomArea.removeFromRight(140).reduced(LayoutConstants::defaultPadding, 30);
     
+    auto bypassArea = buttonArea.removeFromTop(30);
+    buttonArea.removeFromTop(5); 
+    
+    bypassButton.setBounds(bypassArea.reduced(10, 0)); 
     reduceButton.setBounds(buttonArea);
 
     const int knobWidth = bottomArea.getWidth() / 3;
@@ -240,7 +252,8 @@ void TrebleMakerEditor::updateCurve()
         eqCurve[i] = db + wave;
     }
     
-    phase += 0.05f;
+    if (!bypassButton.getToggleState())
+        phase += 0.05f;
     
     const auto text = reduceButton.getToggleState() ? "BOOST" : "REDUCE";
     if (reduceButton.getButtonText() != text)

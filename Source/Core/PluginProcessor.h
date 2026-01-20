@@ -9,6 +9,7 @@ namespace PID
     static const juce::String gain { "gain" };
     static const juce::String q    { "q" };
     static const juce::String mode { "mode" };
+    static const juce::String bypass { "bypass" };
 }
 
 class TrebleMakerAudioProcessor  : public juce::AudioProcessor,
@@ -59,9 +60,7 @@ private:
 
     juce::Random random;
     float driftValue = 0.0f;
-
-
-    float smoothDrive = 0.0f;
+    float smoothDrive = 1.0f;
     
     // mode memory
     struct ModeSettings

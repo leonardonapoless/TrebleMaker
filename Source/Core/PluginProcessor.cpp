@@ -41,6 +41,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout TrebleMakerAudioProcessor::c
     params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(PID::gain, 1),  "Gain",      gainRange, 3.5f));
     params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(PID::q, 1),     "Q Factor",  qRange,    0.7f));
     params.push_back(std::make_unique<juce::AudioParameterBool> (juce::ParameterID(PID::mode, 1),  "Reduce Mode", false));
+    params.push_back(std::make_unique<juce::AudioParameterBool> (juce::ParameterID(PID::bypass, 1), "Bypass", false));
 
     return { params.begin(), params.end() };
 }
@@ -60,6 +61,8 @@ void TrebleMakerAudioProcessor::prepareToPlay (double sampleRate, int samplesPer
     
     dryBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
     
+    dryBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
+
     driftValue = (random.nextFloat() * 2.0f - 1.0f) * 0.1f;
 }
 
@@ -71,6 +74,9 @@ void TrebleMakerAudioProcessor::releaseResources()
 
 void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
+    if (apvts.getRawParameterValue(PID::bypass)->load() > 0.5f)
+        return;
+
     juce::ScopedNoDenormals noDenormals;
     
     auto totalNumInputChannels  = getTotalNumInputChannels();
@@ -175,6 +181,8 @@ void TrebleMakerAudioProcessor::processSaturation(juce::AudioBuffer<float>& buff
         }
     }
 }
+    
+
 
 bool TrebleMakerAudioProcessor::hasEditor() const
 {
