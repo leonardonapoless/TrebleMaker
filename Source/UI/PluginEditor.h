@@ -5,6 +5,16 @@
 #include "../Core/PluginProcessor.h"
 #include "LookAndFeel.h"
 
+namespace LayoutConstants
+{
+    const int width = 600;
+    const int height = 450;
+    const int titleHeight = 45;
+    const float screenRatio = 0.55f;
+    const int defaultPadding = 10;
+    const int labelHeight = 20;
+}
+
 class TrebleMakerEditor : public juce::AudioProcessorEditor
 {
 public:
@@ -48,8 +58,15 @@ private:
     float smoothFocus = 0.5f;
     
     void updateCurve();
+
+    
+    // drawing helpers
     void drawScreen(juce::Graphics& g, juce::Rectangle<float> bounds);
     void drawGrid(juce::Graphics& g, juce::Rectangle<float> bounds);
+    void drawResponseCurve(juce::Graphics& g, juce::Rectangle<float> bounds);
+    void drawGloss(juce::Graphics& g, juce::Rectangle<float> bounds);
+
+    void setupKnob(juce::Slider& s, juce::Label& l, const juce::String& text, const juce::String& id);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrebleMakerEditor)
 };

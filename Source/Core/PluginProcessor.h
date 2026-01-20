@@ -3,7 +3,16 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_dsp/juce_dsp.h>
 
-class TrebleMakerAudioProcessor  : public juce::AudioProcessor
+namespace PID
+{
+    static const juce::String freq { "freq" };
+    static const juce::String gain { "gain" };
+    static const juce::String q    { "q" };
+    static const juce::String mode { "mode" };
+}
+
+class TrebleMakerAudioProcessor  : public juce::AudioProcessor,
+                                   public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     TrebleMakerAudioProcessor();
@@ -11,6 +20,8 @@ public:
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
+    
+    void parameterChanged(const juce::String& parameterID, float newValue) override;
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
@@ -33,23 +44,34 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    // parameter state
     juce::AudioProcessorValueTreeState apvts;
 
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
-    // tpt filters for better modulation response
+    void updateParameters(float& outCutoff, float& outRes, float& outDrive, bool& outMode);
+    float getAnalogDrift();
+    void updateFilters(float cutoff, float q, float drift);
+    void processSaturation(juce::AudioBuffer<float>& buffer, float drive, bool reduceMode);
+
     std::vector<std::unique_ptr<juce::dsp::StateVariableTPTFilter<float>>> filters;
-    
-    // dry buffer for mix
     juce::AudioBuffer<float> dryBuffer;
 
-    // drift lfo
-    double driftPhase = 0.0;
+    juce::Random random;
+    float driftValue = 0.0f;
+
+
+    float smoothDrive = 0.0f;
     
-    // smoothed drive
-    float  smoothDrive = 0.0f;
+    // mode memory
+    struct ModeSettings
+    {
+        float gain = 2.0f;
+        float q    = 0.7f;
+    };
+    
+    ModeSettings boostSettings;
+    ModeSettings reduceSettings { 3.5f, 0.7f };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TrebleMakerAudioProcessor)
 };
