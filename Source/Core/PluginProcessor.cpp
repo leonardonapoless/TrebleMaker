@@ -8,6 +8,12 @@ TrebleMakerAudioProcessor::TrebleMakerAudioProcessor()
                        ),
        apvts(*this, nullptr, "Parameters", createParameterLayout())
 {
+    apvts.addParameterListener(PID::mode, this);
+}
+
+TrebleMakerAudioProcessor::~TrebleMakerAudioProcessor()
+{
+    apvts.removeParameterListener(PID::mode, this);
 }
 
 const juce::String TrebleMakerAudioProcessor::getName() const { return "TrebleMaker"; }
@@ -25,51 +31,36 @@ void TrebleMakerAudioProcessor::changeProgramName (int, const juce::String&) {}
 
 juce::AudioProcessorValueTreeState::ParameterLayout TrebleMakerAudioProcessor::createParameterLayout()
 {
+    auto freqRange  = juce::NormalisableRange<float>(2000.0f, 20000.0f, 1.0f, 0.4f);
+    auto gainRange  = juce::NormalisableRange<float>(0.0f, 8.0f, 0.1f, 1.0f);
+    auto qRange     = juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f);
+
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
-    // freq 2k-20k
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID("freq", 1), "Frequency", 
-        juce::NormalisableRange<float>(2000.0f, 20000.0f, 1.0f, 0.4f), 8000.0f));
-
-    // gain 0-8db
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID("gain", 1), "Gain", 
-        juce::NormalisableRange<float>(0.0f, 8.0f, 0.1f, 1.0f), 2.0f));
-
-    // q 0.1-1.5
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(
-        juce::ParameterID("q", 1), "Width (Q)", 
-        juce::NormalisableRange<float>(0.1f, 1.5f, 0.01f, 1.0f), 0.7f));
-
-    // boost/cut mode
-    params.push_back(std::make_unique<juce::AudioParameterBool>(
-        juce::ParameterID("mode", 1), "Reduce Mode", false));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(PID::freq, 1),  "Frequency", freqRange, 2000.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(PID::gain, 1),  "Gain",      gainRange, 3.5f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID(PID::q, 1),     "Q Factor",  qRange,    0.7f));
+    params.push_back(std::make_unique<juce::AudioParameterBool> (juce::ParameterID(PID::mode, 1),  "Reduce Mode", false));
 
     return { params.begin(), params.end() };
 }
 
 void TrebleMakerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = (uint32_t) samplesPerBlock;
-    spec.numChannels = (uint32_t) getTotalNumOutputChannels();
+    juce::dsp::ProcessSpec spec { sampleRate, (uint32_t) samplesPerBlock, (uint32_t) getTotalNumOutputChannels() };
 
     filters.clear();
     for (int i = 0; i < getTotalNumOutputChannels(); ++i)
     {
-        auto filter = std::make_unique<juce::dsp::StateVariableTPTFilter<float>>();
-        filter->prepare(spec);
-        // juce's tpt filter doesn't have a shelf mode, so i use a highpass
-        // and mix it in later (dry + hp = boost, dry - hp = cut)
-        filter->setType(juce::dsp::StateVariableTPTFilterType::highpass);
-        filters.push_back(std::move(filter));
+        auto f = std::make_unique<juce::dsp::StateVariableTPTFilter<float>>();
+        f->prepare(spec);
+        f->setType(juce::dsp::StateVariableTPTFilterType::highpass);
+        filters.push_back(std::move(f));
     }
     
     dryBuffer.setSize(getTotalNumOutputChannels(), samplesPerBlock);
     
-    driftPhase = 0.0;
+    driftValue = (random.nextFloat() * 2.0f - 1.0f) * 0.1f;
 }
 
 void TrebleMakerAudioProcessor::releaseResources()
@@ -78,140 +69,118 @@ void TrebleMakerAudioProcessor::releaseResources()
     filters.clear();
 }
 
-void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& /*midiMessages*/)
+void TrebleMakerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
+    
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    const double sampleRate = getSampleRate();
-    if (sampleRate <= 0.0)
-        return;
+    if (getSampleRate() <= 0.0) return;
 
-    float currentCutoff = *apvts.getRawParameterValue("freq");
-    float driveAmount   = *apvts.getRawParameterValue("gain");
-    float currentQ      = *apvts.getRawParameterValue("q");
+    float cutoff, res, drive;
+    bool isReduceMode;
     
-    bool isReduceMode = *apvts.getRawParameterValue("mode") > 0.5f;
+    updateParameters(cutoff, res, drive, isReduceMode);
+    
+    float drift = getAnalogDrift();
+    updateFilters(cutoff, res, drift);
 
-    const double driftInc = (sampleRate > 0.0) ? (2.0 * juce::MathConstants<double>::pi * 0.2) / sampleRate : 0.0;
-    
-    driftPhase += driftInc * buffer.getNumSamples();
-    
-    if (driftPhase > juce::MathConstants<double>::twoPi) 
-        driftPhase -= juce::MathConstants<double>::twoPi;
-
-    float driftAmount = (float)std::sin(driftPhase) * 0.005f;
-    float analogFreq = currentCutoff * (1.0f + driftAmount);
-    
-    analogFreq = juce::jlimit(20.0f, (float)(sampleRate * 0.49), analogFreq);
-    
-    float analogQ = currentQ + (driveAmount * 0.02f); 
-
-    for (auto& filter : filters)
-    {
-        filter->setCutoffFrequency(analogFreq);
-        filter->setResonance(analogQ);
-    }
-
-    // copy dry
-    int channelsToCopy = juce::jmin(buffer.getNumChannels(), dryBuffer.getNumChannels());
-    int samplesToCopy = juce::jmin(buffer.getNumSamples(), dryBuffer.getNumSamples());
-    
-    for (int ch = 0; ch < channelsToCopy; ++ch)
-    {
-        dryBuffer.copyFrom(ch, 0, buffer, ch, 0, samplesToCopy);
-    }
-
-    // process filters
+    int numSamples = buffer.getNumSamples();
+    for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+        dryBuffer.copyFrom(ch, 0, buffer, ch, 0, numSamples);
     juce::dsp::AudioBlock<float> block(buffer);
-    
-    for (size_t ch = 0; ch < (size_t) buffer.getNumChannels(); ++ch)
+    for (size_t ch = 0; ch < filters.size(); ++ch)
     {
-        if (ch < filters.size())
-        {
-            auto singleChannelBlock = block.getSingleChannelBlock(ch);
-            juce::dsp::ProcessContextReplacing<float> context(singleChannelBlock);
-            filters[ch]->process(context);
-        }
+        if (ch >= (size_t)buffer.getNumChannels()) break;
+        
+        auto singleChannelBlock = block.getSingleChannelBlock(ch);
+        juce::dsp::ProcessContextReplacing<float> context(singleChannelBlock);
+        filters[ch]->process(context);
     }
     
-    // input (dry) channels might be fewer than output channels (mono in -> stereo out)
-    const int numChannelsToProcess = juce::jmin(buffer.getNumChannels(), dryBuffer.getNumChannels());
+    processSaturation(buffer, drive, isReduceMode);
+}
 
-    // mix
-    if (!isReduceMode)
+void TrebleMakerAudioProcessor::updateParameters(float& outCutoff, float& outRes, float& outDrive, bool& outMode)
+{
+    outCutoff = apvts.getRawParameterValue(PID::freq)->load();
+    outDrive  = apvts.getRawParameterValue(PID::gain)->load();
+    outRes    = apvts.getRawParameterValue(PID::q)->load();
+    outMode   = apvts.getRawParameterValue(PID::mode)->load() > 0.5f;
+}
+
+float TrebleMakerAudioProcessor::getAnalogDrift()
+{
+    const float nudge = (random.nextFloat() - 0.5f) * 0.002f;
+    driftValue = std::clamp(driftValue + nudge, -0.05f, 0.05f);
+    
+    driftValue *= 0.999f;
+    
+    return driftValue;
+}
+
+void TrebleMakerAudioProcessor::updateFilters(float cutoff, float q, float drift)
+{
+    const float modCutoff = juce::jlimit(20.0f, (float)(getSampleRate() * 0.49), cutoff * (1.0f + drift));
+    
+    const float compensatedQ = q * (1.0f + (smoothDrive * 0.05f));
+
+    for (auto& f : filters)
     {
-        // boost
-        float boostAmount = juce::Decibels::decibelsToGain(driveAmount) - 1.0f;
-        
-        for (int ch = 0; ch < numChannelsToProcess; ++ch)
-        {
-            buffer.applyGain(ch, 0, buffer.getNumSamples(), boostAmount);
-            buffer.addFrom(ch, 0, dryBuffer, ch, 0, buffer.getNumSamples());
-        }
-    }
-    else
-    {
-        // cut
-        float cutAmount = juce::Decibels::decibelsToGain(driveAmount); 
-        
-        for (int ch = 0; ch < numChannelsToProcess; ++ch)
-        {
-            buffer.applyGain(ch, 0, buffer.getNumSamples(), cutAmount);
-            
-            auto* dryData = dryBuffer.getReadPointer(ch);
-            auto* wetData = buffer.getWritePointer(ch);
-            
-            for (int s = 0; s < buffer.getNumSamples(); ++s)
-            {
-                wetData[s] = dryData[s] - wetData[s];
-            }
-        }
-    }
-
-    if (!isReduceMode && driveAmount > 0.1f)
-    {
-        const float targetDrive = 1.0f + (driveAmount * 0.08f);
-        const float dcBias = 0.15f;
-        const float invScale = 1.0f / (std::tanh(targetDrive + dcBias) - std::tanh(dcBias));
-        const float blend = juce::jmin(driveAmount / 12.0f, 1.0f);
-
-        const float startDrive = smoothDrive;
-
-        for (int channel = 0; channel < totalNumInputChannels; ++channel)
-        {
-            auto* channelData = buffer.getWritePointer(channel);
-            float currentDrive = startDrive;
-            
-            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
-            {
-                currentDrive += (targetDrive - currentDrive) * 0.001f;
-
-                float in = channelData[sample];
-                float x = in * currentDrive + dcBias;
-                float out = (std::tanh(x) - std::tanh(dcBias)) * invScale;
-                
-                channelData[sample] = out * blend + in * (1.0f - blend);
-            }
-            
-            if (channel == totalNumInputChannels - 1)
-                smoothDrive = currentDrive;
-        }
+        f->setCutoffFrequency(modCutoff);
+        f->setResonance(compensatedQ);
     }
 }
 
-TrebleMakerAudioProcessor::~TrebleMakerAudioProcessor()
+void TrebleMakerAudioProcessor::processSaturation(juce::AudioBuffer<float>& buffer, float drive, bool reduceMode)
 {
+    float gainFactor = juce::Decibels::decibelsToGain(drive);
+    
+    smoothDrive += (gainFactor - smoothDrive) * 0.05f;
+    
+    const float saturationAmount = juce::jmax(0.0f, (smoothDrive - 1.0f) * 0.5f);
+    
+    auto* dryReader = dryBuffer.getArrayOfReadPointers();
+    auto* wetWriter = buffer.getArrayOfWritePointers();
+    
+    for (int ch = 0; ch < buffer.getNumChannels(); ++ch)
+    {
+        for (int i = 0; i < buffer.getNumSamples(); ++i)
+        {
+            float wet = wetWriter[ch][i]; 
+            float dry = dryReader[ch][i];
+            
+            if (saturationAmount > 0.01f)
+            {
+                wet = std::tanh(wet * smoothDrive);
+            }
+            else
+            {
+                wet *= smoothDrive;
+            }
+            
+            if (reduceMode)
+            {
+                wetWriter[ch][i] = dry - wet;
+            }
+            else
+            {
+                float boostGain = juce::jmax(0.0f, smoothDrive - 1.0f); 
+                wetWriter[ch][i] = dry + (wet * boostGain); 
+            }
+        }
+    }
 }
 
 bool TrebleMakerAudioProcessor::hasEditor() const
 {
     return true;
 }
+
 juce::AudioProcessorEditor* TrebleMakerAudioProcessor::createEditor()
 {
     return new TrebleMakerEditor (*this);
@@ -235,6 +204,36 @@ void TrebleMakerAudioProcessor::setStateInformation (const void* data, int sizeI
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new TrebleMakerAudioProcessor();
+}
+
+void TrebleMakerAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
+{
+    if (parameterID == PID::mode)
+    {
+        bool isReduce = (newValue > 0.5f);
+        
+        auto* gainParam = apvts.getParameter(PID::gain);
+        auto* qParam    = apvts.getParameter(PID::q);
+        
+        if (isReduce)
+        {
+            boostSettings.gain = gainParam->convertFrom0to1(gainParam->getValue());
+            boostSettings.q    = qParam->convertFrom0to1(qParam->getValue());
+            
+            // restore reduce settings
+            gainParam->setValueNotifyingHost(gainParam->convertTo0to1(reduceSettings.gain));
+            qParam->setValueNotifyingHost(qParam->convertTo0to1(reduceSettings.q));
+        }
+        else
+        {
+            reduceSettings.gain = gainParam->convertFrom0to1(gainParam->getValue());
+            reduceSettings.q    = qParam->convertFrom0to1(qParam->getValue());
+            
+            // restore boost settings
+            gainParam->setValueNotifyingHost(gainParam->convertTo0to1(boostSettings.gain));
+            qParam->setValueNotifyingHost(qParam->convertTo0to1(boostSettings.q));
+        }
+    }
 }
 
 

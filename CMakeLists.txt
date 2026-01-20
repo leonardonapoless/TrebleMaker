@@ -54,6 +54,7 @@ target_sources(TrebleMaker
         Source/UI/PluginEditor.cpp
         Source/UI/PluginEditor.h
         Source/UI/LookAndFeel.h
+        Source/UI/LookAndFeel.cpp
 )
 
 # Link Libraries
