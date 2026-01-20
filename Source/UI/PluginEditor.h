@@ -33,6 +33,7 @@ private:
     juce::Slider boostSlider;
     juce::Slider focusSlider;
     juce::TextButton reduceButton;
+    juce::TextButton bypassButton;
     
     juce::Label freqLabel;
     juce::Label boostLabel;
@@ -44,6 +45,7 @@ private:
     std::unique_ptr<SliderAttachment> boostAttachment;
     std::unique_ptr<SliderAttachment> focusAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> reduceAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttachment;
     
     // animation
     juce::VBlankAttachment vBlankAttachment;

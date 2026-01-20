@@ -93,6 +93,41 @@ void LookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button,
     auto cornerSize = bounds.getHeight() * 0.5f;
     bool isDown = button.getToggleState() || shouldDrawButtonAsDown;
     
+    if (button.getComponentID() == "bypass")
+    {
+        bool pressed = button.getToggleState() || isDown;
+        auto baseColour = juce::Colour(0xFFF4F4F4); 
+        
+        if (pressed)
+        {
+            g.setColour(baseColour.darker(0.1f)); 
+            g.fillRoundedRectangle(bounds, cornerSize);
+            
+            g.setGradientFill(juce::ColourGradient(juce::Colours::black.withAlpha(0.2f), 0, bounds.getY(),
+                                                   juce::Colours::transparentBlack, 0, bounds.getY() + 5.0f, false));
+            g.fillRoundedRectangle(bounds, cornerSize);
+            
+            g.setGradientFill(juce::ColourGradient(juce::Colours::transparentWhite, 0, bounds.getBottom() - 2.0f,
+                                                   juce::Colours::white.withAlpha(0.3f), 0, bounds.getBottom(), false));
+            g.drawRoundedRectangle(bounds.reduced(0.5f), cornerSize, 1.0f);
+        }
+        else
+        {
+            g.setGradientFill(juce::ColourGradient(juce::Colours::black.withAlpha(0.35f), 0, bounds.getBottom(),
+                                                   juce::Colours::transparentBlack, 0, bounds.getBottom() + 5.0f, false));
+            g.fillRoundedRectangle(bounds.translated(0, 2.0f), cornerSize);
+            
+            g.setGradientFill(juce::ColourGradient(baseColour, 0, bounds.getY(),
+                                                   baseColour.darker(0.05f), 0, bounds.getBottom(), false));
+            g.fillRoundedRectangle(bounds, cornerSize);
+            
+            g.setGradientFill(juce::ColourGradient(juce::Colours::white.withAlpha(0.9f), 0, bounds.getY(),
+                                                   juce::Colours::transparentWhite, 0, bounds.getY() + 2.0f, false));
+            g.drawRoundedRectangle(bounds.reduced(0.5f), cornerSize, 1.0f);
+        }
+        return; 
+    }
+    
     if (!isDown)
     {
         g.setGradientFill(juce::ColourGradient(juce::Colours::black.withAlpha(0.4f), 0, bounds.getBottom(),
@@ -150,6 +185,26 @@ void LookAndFeel::drawButtonBackground(juce::Graphics& g, juce::Button& button,
                                                juce::Colours::white.withAlpha(0.1f), 0, inner.getBottom(), false));
         g.fillRoundedRectangle(inner, cornerSize);
     }
+}
+
+void LookAndFeel::drawButtonText(juce::Graphics& g, juce::TextButton& button, bool, bool)
+{
+    g.setFont(getTextButtonFont(button, button.getHeight()));
+    g.setColour(button.findColour(juce::TextButton::textColourOffId));
+    
+    auto textBounds = button.getLocalBounds();
+    
+    if (button.getComponentID() == "bypass")
+    {
+        g.setColour(juce::Colour(0xFF222222)); 
+        
+        if (button.getToggleState() || button.isDown())
+        {
+             textBounds.translate(0, 1); 
+        }
+    }
+    
+    g.drawText(button.getButtonText(), textBounds, juce::Justification::centred);
 }
 
 void LookAndFeel::drawToggleButton(juce::Graphics& g, juce::ToggleButton& button,
