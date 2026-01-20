@@ -92,7 +92,7 @@ cmake --build Builds/CMake --config Release
 ```
 
 **Artifacts:**
-After building, finding the plugins in `Builds/CMake/TrebleMaker_artefacts/`:
+After building, find the plugins in `Builds/CMake/TrebleMaker_artefacts/`:
 - **VST3**: `VST3/TrebleMaker.vst3`
 - **CLAP**: `CLAP/TrebleMaker.clap`
 - **AU**: `AU/TrebleMaker.component`
