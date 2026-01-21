@@ -64,3 +64,8 @@ Builds/
 
 # Clangd
 .cache/
+
+# .pkg installer
+TrebleMaker_Installer.pkg
+
+build/
