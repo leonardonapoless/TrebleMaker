@@ -10,7 +10,8 @@
 
   <br />
 
-  <img width="600" alt="treblemaker_demo" src="https://github.com/user-attachments/assets/b6c51a06-bc3d-4967-a3bb-a83b19958148" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+  <img width="600" alt="treblemaker_demo" src="https://github.com/user-attachments/assets/cd7bbb85-265c-4817-908b-52b11746fe31" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
+
 
   <br />
   <br />
@@ -23,7 +24,7 @@
   <p align="center" style="max-width: 800px; margin: 0 auto;">
     I built <strong>TrebleMaker</strong> to properly learn C++ and JUCE. While the DSP is a standard high-shelf filter, the real challenge of the project was the architecture and the UI system. I wanted to see if I could build a resolution-independent interface entirely from code, no image assets allowed.
     <br /><br />
-    It's a work in progress, but it's functional and I learned a ton building it.
+    I learned a ton building it.
   </p>
 
   <br />
