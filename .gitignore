@@ -67,6 +67,6 @@ Builds/
 
 # .pkg installer (macOS)
 TrebleMaker_Installer.pkg
-
+*.exe
 build/
 Output/
