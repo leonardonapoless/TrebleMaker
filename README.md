@@ -3,7 +3,6 @@
   <div align="center">
     <h1>TrebleMaker</h1>
 
-
   <p style="font-style: italic; color: #666; font-size: 1.1em;">
     Here’s to the crazy ones. The misfits. The rebels. The <strong><i>TREBLEMAKERS</i></strong>.
   </p>
@@ -11,7 +10,6 @@
   <br />
 
   <img width="600" alt="treblemaker_demo" src="https://github.com/user-attachments/assets/cd7bbb85-265c-4817-908b-52b11746fe31" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" />
-
 
   <br />
   <br />
@@ -71,10 +69,13 @@
 ## How to Build
 
 **Prerequisites:**
+
 - [CMake](https://cmake.org/download/) (3.22 or higher)
+
   ```bash
   brew install cmake
   ```
+
 - C++ Compiler (Xcode on macOS, Visual Studio on Windows)
 
 **Build:**
@@ -94,6 +95,7 @@ cmake --build Builds/CMake --config Release
 
 **Artifacts:**
 After building, find the plugins in `Builds/CMake/TrebleMaker_artefacts/`:
+
 - **VST3**: `VST3/TrebleMaker.vst3`
 - **CLAP**: `CLAP/TrebleMaker.clap`
 - **AU**: `AU/TrebleMaker.component`

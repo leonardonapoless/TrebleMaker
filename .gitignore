@@ -65,8 +65,14 @@ Builds/
 # Clangd
 .cache/
 
-# .pkg installer (macOS)
-TrebleMaker_Installer.pkg
+# installers
+*.pkg
 *.exe
+*.zip
+*.tar.gz
 build/
 Output/
+Linux_Release/
+macOS_Release/
+Windows_Release/
+staging/

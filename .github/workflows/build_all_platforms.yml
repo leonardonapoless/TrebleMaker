@@ -1,0 +1,194 @@
+name: Build TrebleMaker
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # MACOS BUILD
+  build_mac:
+    name: Build macOS (AU/VST3/CLAP)
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get Version
+      id: get_version
+      run: |
+        VERSION=$(grep "project(TrebleMaker VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "PROJECT_VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "Detected Version: ${VERSION}"
+
+    - name: Configure CMake
+      run: cmake -S . -B build -G Xcode -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Build Installer (Unsigned)
+      run: |
+        mkdir -p Builds/CMake/TrebleMaker_artefacts/VST3
+        mkdir -p Builds/CMake/TrebleMaker_artefacts/AU/
+        mkdir -p Builds/CMake/TrebleMaker_artefacts/CLAP
+        
+        find build -name "TrebleMaker.vst3" -exec cp -r {} Builds/CMake/TrebleMaker_artefacts/VST3/ \;
+        find build -name "TrebleMaker.component" -exec cp -r {} Builds/CMake/TrebleMaker_artefacts/AU/ \;
+        find build -name "TrebleMaker.clap" -exec cp {} Builds/CMake/TrebleMaker_artefacts/CLAP/ \;
+
+        chmod +x installer_macos.sh
+        ./installer_macos.sh
+
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: TrebleMaker-${{ steps.get_version.outputs.version }}-macOS-Installer
+        path: TrebleMaker_Installer.pkg
+
+  # LINUX BUILD
+  build_linux:
+    name: Build Linux (VST3/LV2/CLAP)
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get Version
+      id: get_version
+      run: |
+        VERSION=$(grep "project(TrebleMaker VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "PROJECT_VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libasound2-dev libx11-dev libxinerama-dev libxext-dev libfreetype6-dev \
+          libwebkit2gtk-4.0-dev libglu1-mesa-dev libjack-jackd2-dev libcurl4-openssl-dev \
+          xvfb ninja-build zenity
+
+    - name: Configure CMake
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Create Tarball
+      run: |
+        mkdir -p Linux_Release
+        [ -e build/TrebleMaker_artefacts/Release/VST3/TrebleMaker.vst3 ] && cp -r build/TrebleMaker_artefacts/Release/VST3/TrebleMaker.vst3 Linux_Release/
+        [ -e build/TrebleMaker_artefacts/Release/LV2/TrebleMaker.lv2 ] && cp -r build/TrebleMaker_artefacts/Release/LV2/TrebleMaker.lv2 Linux_Release/
+        [ -e build/TrebleMaker_artefacts/Release/CLAP/TrebleMaker.clap ] && cp build/TrebleMaker_artefacts/Release/CLAP/TrebleMaker.clap Linux_Release/
+        
+        cp installer_linux.sh Linux_Release/
+        chmod +x Linux_Release/installer_linux.sh
+        
+        tar -czvf TrebleMaker-${PROJECT_VERSION}-Linux.tar.gz Linux_Release
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: TrebleMaker-${{ steps.get_version.outputs.version }}-Linux
+        path: TrebleMaker-${{ steps.get_version.outputs.version }}-Linux.tar.gz
+
+  # WINDOWS BUILD
+  build_windows:
+    name: Build Windows (VST3/CLAP)
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Get Version
+      id: get_version
+      shell: bash
+      run: |
+        VERSION=$(grep "project(TrebleMaker VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "PROJECT_VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+    - name: Configure CMake
+      run: cmake -S . -B build -A x64
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Setup Inno Setup
+      run: |
+        choco install innosetup
+
+    - name: Compile Installer
+      shell: powershell
+      run: |
+        New-Item -ItemType Directory -Force -Path "Builds\Windows"
+        Copy-Item -Recurse -Path "build\TrebleMaker_artefacts" -Destination "Builds\Windows"
+        ISCC "/DMyAppVersion=${{ steps.get_version.outputs.version }}" installer_windows.iss
+
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: TrebleMaker-${{ steps.get_version.outputs.version }}-Windows-Installer
+        path: Output/TrebleMaker_Windows_Installer_${{ steps.get_version.outputs.version }}.exe
+
+    - name: Upload Raw Binaries (Fall back)
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: TrebleMaker-${{ steps.get_version.outputs.version }}-Windows-Binaries
+        path: |
+           build/TrebleMaker_artefacts/Release/VST3/*.vst3
+           build/TrebleMaker_artefacts/Release/CLAP/*.clap
+
+  # CREATE RELEASE
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build_mac, build_linux, build_windows]
+    permissions:
+      contents: write
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Get Version
+      id: get_version
+      run: |
+        VERSION=$(grep "project(TrebleMaker VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "PROJECT_VERSION=${VERSION}" >> $GITHUB_ENV
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+    - name: Download All Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        
+    - name: Organize Release Files
+      run: |
+        mkdir release_assets
+        
+        find artifacts -name "TrebleMaker_Installer.pkg" -exec cp {} release_assets/TrebleMaker-${PROJECT_VERSION}-macOS.pkg \;
+        
+        find artifacts -name "*.exe" -exec cp {} release_assets/ \;
+        
+        find artifacts -name "*.tar.gz" -exec cp {} release_assets/ \;
+        
+        ls -l release_assets
+
+    - name: Create / Update Release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: v${{ steps.get_version.outputs.version }}
+        name: v${{ steps.get_version.outputs.version }}
+        allowUpdates: true
+        removeArtifacts: true
+        replacesArtifacts: true
+        makeLatest: true
+        artifacts: "release_assets/*"
+        token: ${{ secrets.GITHUB_TOKEN }}
