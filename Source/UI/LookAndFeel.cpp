@@ -14,6 +14,10 @@ const juce::Colour screenRed = juce::Colour(0xFFFF3B30);
 const juce::Colour knobTick = juce::Colour(0xFFFF3B30);
 const juce::Colour buttonBlue = juce::Colour(0xFF101010);
 
+const juce::Colour knobBodyLight = juce::Colour(0xFFF0F0F0);
+const juce::Colour knobBodyDark = juce::Colour(0xFFB0B0B0);
+const juce::Colour knobBodyMid = juce::Colour(0xFFD0D0D0);
+const juce::Colour knobFaceNormal = juce::Colour(0xFFE0E0E0);
 const auto knobFaceShadow = juce::Colour(0xFFBBBBBB);
 } 
 
