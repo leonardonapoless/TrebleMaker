@@ -2,7 +2,17 @@
 
 PROJECT_NAME="TrebleMaker"
 IDENTIFIER="com.leocodes.treblemaker" 
-VERSION="1.0.0"
+
+if [ -z "$PROJECT_VERSION" ]; then
+    VERSION=$(grep "project(TrebleMaker VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+else
+    VERSION="$PROJECT_VERSION"
+fi
+
+if [ -z "$VERSION" ]; then
+    echo "Error: Could not determine version from environment or CMakeLists.txt"
+    exit 1
+fi
 
 VST3_SOURCE="Builds/CMake/TrebleMaker_artefacts/VST3/${PROJECT_NAME}.vst3"
 AU_SOURCE="Builds/CMake/TrebleMaker_artefacts/AU/${PROJECT_NAME}.component"

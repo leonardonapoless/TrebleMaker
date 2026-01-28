@@ -1,5 +1,4 @@
 #define MyAppName "TrebleMaker"
-#define MyAppVersion "1.0.0"
 #define MyAppPublisher "LeoCodes"
 #define MyAppURL "https://github.com/leonardonapoless/treblemaker"
 
@@ -12,7 +11,7 @@ AppPublisherURL={#MyAppURL}
 DefaultDirName={commonpf}\{#MyAppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
-OutputBaseFilename=TrebleMaker_Windows_Installer_1.0.0
+OutputBaseFilename=TrebleMaker_Windows_Installer_{#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
