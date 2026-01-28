@@ -83,7 +83,8 @@ jobs:
         sudo apt-get install -y \
           libasound2-dev libjack-jackd2-dev \
           libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxtst-dev \
-          libfreetype6-dev libwebkit2gtk-4.1-dev libglu1-mesa-dev libcurl4-openssl-dev \
+          libfreetype6-dev libwebkit2gtk-4.1-dev libgtk-3-dev libglu1-mesa-dev libcurl4-openssl-dev \
+          pkg-config libcairo2-dev libpulse-dev \
           xvfb ninja-build zenity
 
     - name: Configure CMake
