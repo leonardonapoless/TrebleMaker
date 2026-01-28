@@ -23,10 +23,9 @@ progress() {
 install_steps() {
     progress 10 "Initializing..."
     VST3_DIR="$HOME/.vst3"
-    LV2_DIR="$HOME/.lv2"
     CLAP_DIR="$HOME/.clap"
 
-    mkdir -p "$VST3_DIR" "$LV2_DIR" "$CLAP_DIR"
+    mkdir -p "$VST3_DIR" "$CLAP_DIR"
     
     local count=0
 
@@ -37,12 +36,6 @@ install_steps() {
         ((count++))
     fi
 
-    if [ -d "TrebleMaker.lv2" ]; then
-        progress 60 "Installing LV2..."
-        rm -rf "$LV2_DIR/TrebleMaker.lv2"
-        cp -r "TrebleMaker.lv2" "$LV2_DIR/"
-        ((count++))
-    fi
 
     if [ -f "TrebleMaker.clap" ]; then
         progress 80 "Installing CLAP..."
