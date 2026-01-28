@@ -18,8 +18,8 @@ const juce::Colour knobBodyLight = juce::Colour(0xFFF0F0F0);
 const juce::Colour knobBodyDark = juce::Colour(0xFFB0B0B0);
 const juce::Colour knobBodyMid = juce::Colour(0xFFD0D0D0);
 const juce::Colour knobFaceNormal = juce::Colour(0xFFE0E0E0);
-const auto knobFaceShadow = juce::Colour(0xFFBBBBBB);
-} 
+const juce::Colour knobFaceShadow = juce::Colour(0xFFBBBBBB);
+}
 
 LookAndFeel::LookAndFeel() {
   setColour(juce::Label::textColourId, theme_colors::textDark);
