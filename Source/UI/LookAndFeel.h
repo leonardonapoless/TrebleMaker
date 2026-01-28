@@ -18,6 +18,11 @@ namespace theme_colors
     extern const juce::Colour screenRed;
     extern const juce::Colour knobTick;
     extern const juce::Colour buttonBlue;
+
+    extern const juce::Colour knobBodyLight;
+    extern const juce::Colour knobBodyDark;
+    extern const juce::Colour knobBodyMid;
+    extern const juce::Colour knobFaceNormal;
 }
 
 class LookAndFeel : public juce::LookAndFeel_V4

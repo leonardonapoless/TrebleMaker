@@ -24,6 +24,7 @@ public:
     
     void parameterChanged(const juce::String& parameterID, float newValue) override;
 
+    using AudioProcessor::processBlock;
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
     juce::AudioProcessorEditor* createEditor() override;
@@ -62,7 +63,6 @@ private:
     float driftValue = 0.0f;
     float smoothDrive = 1.0f;
     
-    // mode memory
     struct ModeSettings
     {
         float gain = 2.0f;
