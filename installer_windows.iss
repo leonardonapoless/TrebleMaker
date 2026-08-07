@@ -21,10 +21,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 ; VST3 (Folder)
-Source: "Builds\Windows\TrebleMaker_artefacts\Release\VST3\TrebleMaker.vst3\*"; DestDir: "{commoncf64}\VST3\TrebleMaker.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "staged_artifacts\VST3\TrebleMaker.vst3\*"; DestDir: "{commoncf64}\VST3\TrebleMaker.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 ; CLAP (Single File)
-Source: "Builds\Windows\TrebleMaker_artefacts\Release\CLAP\TrebleMaker.clap"; DestDir: "{commoncf64}\CLAP"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "staged_artifacts\CLAP\TrebleMaker.clap"; DestDir: "{commoncf64}\CLAP"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Messages]
 SetupAppTitle=TrebleMaker Installer

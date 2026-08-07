@@ -44,11 +44,17 @@ jobs:
           find build -name "*.component" -exec cp -r {} staged_artifacts/AU/ \;
           find build -name "*.clap" -exec cp {} staged_artifacts/CLAP/ \;
 
+      - name: Build Installer
+        run: |
+          chmod +x installer_macos.sh
+          ./installer_macos.sh
+          mv TrebleMaker_Installer.pkg TrebleMaker_macOS_Installer_${{ steps.get_version.outputs.version }}.pkg
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrebleMaker-${{ steps.get_version.outputs.version }}-macOS-Plugins
-          path: staged_artifacts/
+          name: TrebleMaker_macOS_Installer_${{ steps.get_version.outputs.version }}
+          path: TrebleMaker_macOS_Installer_${{ steps.get_version.outputs.version }}.pkg
 
   # LINUX BUILD
   build_linux:
@@ -89,11 +95,18 @@ jobs:
           find build -name "*.lv2" -exec cp -r {} staged_artifacts/LV2/ \;
           find build -name "*.clap" -exec cp {} staged_artifacts/CLAP/ \;
 
+      - name: Build Installer Package
+        run: |
+          cp installer_linux.sh staged_artifacts/
+          chmod +x staged_artifacts/installer_linux.sh
+          cd staged_artifacts
+          zip -r ../TrebleMaker_Linux_Installer_${{ steps.get_version.outputs.version }}.zip ./*
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrebleMaker-${{ steps.get_version.outputs.version }}-Linux-Plugins
-          path: staged_artifacts/
+          name: TrebleMaker_Linux_Installer_${{ steps.get_version.outputs.version }}
+          path: TrebleMaker_Linux_Installer_${{ steps.get_version.outputs.version }}.zip
 
   # WINDOWS BUILD
   build_windows:
@@ -127,8 +140,31 @@ jobs:
           find build -name "*.lv2" -exec cp -r {} staged_artifacts/LV2/ \;
           find build -name "*.clap" -exec cp {} staged_artifacts/CLAP/ \;
 
+      - name: Build Installer
+        shell: bash
+        run: |
+          iscc //DMyAppVersion=${{ steps.get_version.outputs.version }} installer_windows.iss
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrebleMaker-${{ steps.get_version.outputs.version }}-Windows-Plugins
-          path: staged_artifacts/
+          name: TrebleMaker_Windows_Installer_${{ steps.get_version.outputs.version }}
+          path: Output/TrebleMaker_Windows_Installer_${{ steps.get_version.outputs.version }}.exe
+  # RELEASE BUILD
+  release:
+    name: Create GitHub Release
+    needs: [build_mac, build_linux, build_windows]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
