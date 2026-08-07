@@ -36,7 +36,8 @@ juce_add_plugin(TrebleMaker
     COPY_PLUGIN_AFTER_BUILD TRUE
     PLUGIN_MANUFACTURER_CODE "LeoC"
     PLUGIN_CODE "Tblm"
-    FORMATS VST3 AU Standalone
+    FORMATS VST3 LV2 AU Standalone
+    LV2URI "http://leocodes.com/plugins/TrebleMaker"
     PRODUCT_NAME "TrebleMaker"
 )
 
