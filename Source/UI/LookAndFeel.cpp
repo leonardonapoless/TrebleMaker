@@ -1,4 +1,5 @@
 #include "LookAndFeel.h"
+#include <BinaryData.h>
 
 namespace theme_colors {
 const juce::Colour background = juce::Colour(0xFFF2F2F2);
@@ -224,12 +225,14 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
                        button.getToggleState() || shouldDrawButtonAsDown);
 
   g.setColour(juce::Colours::white);
-  g.setFont(
-      juce::Font(juce::FontOptions("Helvetica", 14.0f, juce::Font::bold)));
+  
+  static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::HelveticaBold_ttf, BinaryData::HelveticaBold_ttfSize);
+  g.setFont(juce::Font(juce::FontOptions(typeface).withHeight(14.0f)));
   g.drawText(button.getButtonText(), button.getLocalBounds(),
              juce::Justification::centred, true);
 }
 
 juce::Font LookAndFeel::getTextButtonFont(juce::TextButton &, int) {
-  return juce::Font(juce::FontOptions("Helvetica", 13.0f, juce::Font::bold));
+  static auto typeface = juce::Typeface::createSystemTypefaceFor(BinaryData::HelveticaBold_ttf, BinaryData::HelveticaBold_ttfSize);
+  return juce::Font(juce::FontOptions(typeface).withHeight(13.0f));
 }

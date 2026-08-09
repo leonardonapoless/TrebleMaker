@@ -47,6 +47,15 @@ clap_juce_extensions_plugin(
     CLAP_FEATURES audio-effect equalizer
 )
 
+# Assets
+juce_add_binary_data(TrebleMakerAssets
+    HEADER_NAME "BinaryData.h"
+    NAMESPACE BinaryData
+    SOURCES
+        Source/Assets/Helvetica-Bold.ttf
+)
+
+
 # Source Files
 target_sources(TrebleMaker
     PRIVATE
@@ -68,6 +77,7 @@ target_compile_definitions(TrebleMaker
 
 target_link_libraries(TrebleMaker
     PRIVATE
+        TrebleMakerAssets
         clap_juce_extensions
         juce::juce_audio_utils
         juce::juce_gui_extra

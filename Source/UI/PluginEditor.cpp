@@ -1,7 +1,7 @@
 #include "../Core/PluginProcessor.h"
 #include "PluginEditor.h"
 #include <juce_dsp/juce_dsp.h>
-
+#include <BinaryData.h>
 TrebleMakerEditor::TrebleMakerEditor (TrebleMakerAudioProcessor& p)
     : AudioProcessorEditor (&p), audioProcessor (p),
       vBlankAttachment(this, [this] { updateCurve(); })
@@ -28,7 +28,10 @@ TrebleMakerEditor::TrebleMakerEditor (TrebleMakerAudioProcessor& p)
     bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(audioProcessor.apvts, PID::bypass, bypassButton);
     
     titleLabel.setText("TrebleMaker", juce::dontSendNotification);
-    titleLabel.setFont(juce::Font(juce::FontOptions("Helvetica", 18.0f, juce::Font::bold)));
+    
+    static auto titleTypeface = juce::Typeface::createSystemTypefaceFor(BinaryData::HelveticaBold_ttf, BinaryData::HelveticaBold_ttfSize);
+    titleLabel.setFont(juce::Font(juce::FontOptions(titleTypeface).withHeight(18.0f)));
+    
     titleLabel.setColour(juce::Label::textColourId, theme_colors::textDark);
     addAndMakeVisible(titleLabel);
 
@@ -170,7 +173,10 @@ void TrebleMakerEditor::setupKnob(juce::Slider& s, juce::Label& l, const juce::S
     
     l.setText(text, juce::dontSendNotification);
     l.setJustificationType(juce::Justification::centred);
-    l.setFont(juce::Font(juce::FontOptions("Helvetica", 12.0f, juce::Font::bold)));
+    
+    static auto labelTypeface = juce::Typeface::createSystemTypefaceFor(BinaryData::HelveticaBold_ttf, BinaryData::HelveticaBold_ttfSize);
+    l.setFont(juce::Font(juce::FontOptions(labelTypeface).withHeight(12.0f)));
+    
     addAndMakeVisible(l);
 }
 
