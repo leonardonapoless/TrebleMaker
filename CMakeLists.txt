@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(TrebleMaker VERSION 1.0.2 LANGUAGES C CXX)
+project(TrebleMaker VERSION 1.0.0 LANGUAGES C CXX)
 
 # Create a compile_commands.json file for IDE support
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
