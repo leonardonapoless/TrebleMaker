@@ -48,13 +48,13 @@ jobs:
         run: |
           chmod +x installer_macos.sh
           ./installer_macos.sh
-          mv TrebleMaker_Installer.pkg TrebleMaker_macOS_Installer_${{ steps.get_version.outputs.version }}.pkg
+          mv TrebleMaker_Installer.pkg TrebleMaker_macOS_Installer.pkg
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrebleMaker_macOS_Installer_${{ steps.get_version.outputs.version }}
-          path: TrebleMaker_macOS_Installer_${{ steps.get_version.outputs.version }}.pkg
+          name: TrebleMaker_macOS_Installer
+          path: TrebleMaker_macOS_Installer.pkg
 
   # LINUX BUILD
   build_linux:
@@ -100,13 +100,13 @@ jobs:
           cp installer_linux.sh staged_artifacts/
           chmod +x staged_artifacts/installer_linux.sh
           cd staged_artifacts
-          zip -r ../TrebleMaker_Linux_Installer_${{ steps.get_version.outputs.version }}.zip ./*
+          zip -r ../TrebleMaker_Linux_Installer.zip ./*
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrebleMaker_Linux_Installer_${{ steps.get_version.outputs.version }}
-          path: TrebleMaker_Linux_Installer_${{ steps.get_version.outputs.version }}.zip
+          name: TrebleMaker_Linux_Installer
+          path: TrebleMaker_Linux_Installer.zip
 
   # WINDOWS BUILD
   build_windows:
@@ -148,8 +148,8 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TrebleMaker_Windows_Installer_${{ steps.get_version.outputs.version }}
-          path: Output/TrebleMaker_Windows_Installer_${{ steps.get_version.outputs.version }}.exe
+          name: TrebleMaker_Windows_Installer
+          path: Output/TrebleMaker_Windows_Installer.exe
   # RELEASE BUILD
   release:
     name: Create GitHub Release
